@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B1 英文單字多巴胺樂園</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fdf2f8;
+            background-image: radial-gradient(#f472b6 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .neo-box {
+            border: 3px solid #1e293b;
+            box-shadow: 4px 4px 0px 0px #1e293b;
+            border-radius: 12px;
+        }
+
+        .neo-box-sm {
+            border: 2px solid #1e293b;
+            box-shadow: 2px 2px 0px 0px #1e293b;
+            border-radius: 8px;
+        }
+
+        .neo-button {
+            border: 3px solid #1e293b;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .neo-button.active {
+            background-color: #fde047;
+            transform: translateY(-2px);
+            box-shadow: 4px 4px 0px 0px #1e293b;
+            z-index: 10;
+        }
+
+        .neo-button.inactive {
+            background-color: #f8fafc;
+            border-bottom: 0;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        
+        .neo-button.inactive:hover {
+            background-color: #e2e8f0;
+            opacity: 1;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            background-size: 1em;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+        
+        th, td {
+            border-bottom: 2px solid #1e293b;
+            border-right: 2px solid #1e293b;
+        }
+        
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Checkbox styling */
+        .custom-checkbox {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #1e293b;
+            border-radius: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .custom-checkbox:checked {
+            background-color: #f472b6;
+        }
+
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .modal-content {
+            background: #fff;
+            padding: 2rem;
+            max-width: 90%;
+            width: 400px;
+        }
+
+        .input-correct {
+            background-color: #4ade80 !important;
+            color: #1e293b;
+            border-color: #166534;
+        }
+
+        .input-wrong {
+            background-color: #fca5a5 !important;
+            color: #7f1d1d;
+            border-color: #991b1b;
+        }
+
+        .btn-confirm {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-confirm:hover:not(:disabled) {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+        
+        .btn-confirm:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-2 md:p-6 text-slate-800">
+
+    <!-- Registration Modal -->
+    <div id="registration-modal" class="modal-overlay hidden">
+        <div class="modal-content neo-box flex flex-col gap-4">
+            <h2 class="text-2xl font-black text-center text-[#c084fc]" style="-webkit-text-stroke: 1px black;">✨ 學生登記 ✨</h2>
+            <p class="text-sm font-bold text-center text-gray-600 bg-yellow-100 p-2 rounded border border-black">
+                請填寫自己的資料，練習紀錄將提供老師查看
+            </p>
+            <div class="space-y-3 font-bold mt-2">
+                <div>
+                    <label class="block mb-1">班級 (最多3碼):</label>
+                    <input type="text" id="reg-class" maxlength="3" class="w-full neo-box-sm p-2 outline-none focus:ring-2 focus:ring-[#c084fc]" placeholder="例如: 101">
+                </div>
+                <div>
+                    <label class="block mb-1">座號 (1-50):</label>
+                    <input type="number" id="reg-seat" min="1" max="50" class="w-full neo-box-sm p-2 outline-none focus:ring-2 focus:ring-[#c084fc]" placeholder="例如: 1">
+                </div>
+                <div>
+                    <label class="block mb-1">姓名 (最多10字):</label>
+                    <input type="text" id="reg-name" maxlength="10" class="w-full neo-box-sm p-2 outline-none focus:ring-2 focus:ring-[#c084fc]" placeholder="您的姓名">
+                </div>
+            </div>
+            <div id="reg-error" class="text-red-500 font-bold text-sm hidden">請確實填寫所有資料！</div>
+            <button id="btn-register" class="bg-[#4ade80] text-black font-black py-3 mt-2 neo-box-sm hover:bg-[#22c55e] transition-colors">
+                進入樂園 🚀
+            </button>
+            <div id="resume-actions" class="hidden flex-col gap-2 mt-2 pt-2 border-t-2 border-dashed border-gray-400">
+                <p class="text-sm font-bold text-center text-blue-600">偵測到本地儲存紀錄！</p>
+                <button id="btn-resume" class="bg-[#3b82f6] text-white font-black py-2 neo-box-sm hover:bg-[#2563eb]">繼續上次練習</button>
+                <button id="btn-new-round" class="bg-[#f43f5e] text-white font-black py-2 neo-box-sm hover:bg-[#e11d48]">開始新一輪 (保留收藏)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="max-w-6xl mx-auto space-y-4 hidden">
+        
+        <!-- Header & Sync Status -->
+        <header class="bg-[#c084fc] text-white py-3 px-4 md:px-6 neo-box flex flex-col md:flex-row items-center justify-between gap-4">
+            <h1 class="text-2xl md:text-3xl font-black tracking-wide shrink-0" style="-webkit-text-stroke: 1px black;">✨ B1 英文單字多巴胺樂園</h1>
+            
+            <div class="flex flex-col items-end gap-2 w-full md:w-auto">
+                <div class="flex flex-wrap items-center justify-end gap-2 text-sm font-bold bg-white text-black px-3 py-1 neo-box-sm">
+                    <span>👤 <span id="display-student-info">未登入</span></span>
+                    <span class="mx-1 text-gray-300">|</span>
+                    <span id="sync-status" class="text-orange-500">預覽模式：只存本機</span>
+                </div>
+                <div class="flex flex-wrap gap-2 text-sm font-bold">
+                    <button id="btn-manual-save" class="bg-[#fbbf24] text-black px-3 py-1 neo-box-sm hover:scale-105 transition-transform">💾 儲存進度</button>
+                    <button id="btn-end-session" class="bg-[#f87171] text-black px-3 py-1 neo-box-sm hover:scale-105 transition-transform">🛑 結束練習</button>
+                    <button id="btn-change-student" class="bg-gray-200 text-black px-3 py-1 neo-box-sm hover:scale-105 transition-transform">🔄 更換學生</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters Section -->
+        <section class="bg-white p-4 md:p-6 neo-box flex flex-col gap-4">
+            <div class="flex flex-wrap items-center gap-4 w-full">
+                <!-- Scope Filter -->
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">🎯 範圍:</span>
+                    <select id="filter-lesson" class="bg-[#fde047] py-2 px-3 md:px-4 pr-8 neo-box-sm font-bold cursor-pointer outline-none focus:bg-yellow-300 text-sm md:text-base">
+                        <option value="ALL">全部單字 (All)</option>
+                        <optgroup label="段考範圍">
+                            <option value="EXAM1">第一次段考 (L1 ~ R1)</option>
+                            <option value="EXAM2">第二次段考 (L4 ~ R2)</option>
+                            <option value="EXAM3">第三次段考 (L7 ~ R3)</option>
+                        </optgroup>
+                        <optgroup label="單課選擇">
+                            <option value="L1">Lesson 1</option>
+                            <option value="L2">Lesson 2</option>
+                            <option value="L3">Lesson 3</option>
+                            <option value="R1">Review 1</option>
+                            <option value="L4">Lesson 4</option>
+                            <option value="L5">Lesson 5</option>
+                            <option value="L6">Lesson 6</option>
+                            <option value="R2">Review 2</option>
+                            <option value="L7">Lesson 7</option>
+                            <option value="L8">Lesson 8</option>
+                            <option value="L9">Lesson 9</option>
+                            <option value="R3">Review 3</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Letter Filter -->
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">🔤 字母:</span>
+                    <select id="filter-letter" class="bg-[#38bdf8] py-2 px-3 md:px-4 pr-8 neo-box-sm font-bold cursor-pointer outline-none focus:bg-sky-300 text-sm md:text-base">
+                        <option value="ALL">全部</option>
+                        <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                        <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                        <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+                        <option value="J">J</option><option value="K">K</option><option value="L">L</option>
+                        <option value="M">M</option><option value="N">N</option><option value="O">O</option>
+                        <option value="P">P</option><option value="Q">Q</option><option value="R">R</option>
+                        <option value="S">S</option><option value="T">T</option><option value="U">U</option>
+                        <option value="V">V</option><option value="W">W</option><option value="X">X</option>
+                        <option value="Y">Y</option><option value="Z">Z</option>
+                    </select>
+                </div>
+
+                <!-- POS Filter -->
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg">📚 詞性:</span>
+                    <select id="filter-pos" class="bg-[#f472b6] py-2 px-3 md:px-4 pr-8 neo-box-sm font-bold cursor-pointer outline-none focus:bg-pink-300 text-sm md:text-base">
+                        <option value="ALL">全部</option>
+                        <option value="n.">名詞 (n.)</option>
+                        <option value="v.">動詞 (v.)</option>
+                        <option value="adj.">形容詞 (adj.)</option>
+                        <option value="adv.">副詞 (adv.)</option>
+                        <option value="phr.">片語 (phr.)</option>
+                        <option value="prep.">介系詞 (prep.)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <hr class="w-full border-t-2 border-dashed border-gray-400">
+
+            <div class="flex flex-wrap items-center justify-between w-full gap-4">
+                <div class="text-gray-800 font-bold text-base md:text-lg flex items-center gap-2 flex-wrap">
+                    目前篩選: <span id="word-count" class="bg-white text-black px-3 py-1 rounded-full border-2 border-black font-black shadow-sm">0</span> 題
+                </div>
+                <div class="flex flex-wrap gap-2 text-sm md:text-base">
+                    <button id="btn-toggle-starred" class="bg-[#fb923c] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 transition-transform hover:scale-105">
+                        ⭐ 我的收藏 (<span id="starred-count">0</span>)
+                    </button>
+                    <button id="btn-toggle-mistakes" class="bg-[#ef4444] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 transition-transform hover:scale-105">
+                        ❌ 本輪錯題 (<span id="mistake-count">0</span>)
+                    </button>
+                    <button id="btn-reset-filters" class="bg-[#e5e7eb] text-gray-800 font-bold py-2 px-3 neo-box-sm flex items-center gap-1 transition-transform hover:scale-105">
+                        🔄 重置篩選
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Global Progress Bar (Whole Book Coverage) -->
+            <div class="w-full bg-slate-100 p-3 rounded border-2 border-slate-300 flex flex-col sm:flex-row items-center gap-3">
+                <span class="font-bold text-sm text-slate-700 whitespace-nowrap">📖 本輪整冊覆蓋率：</span>
+                <div class="flex-1 w-full h-4 bg-white border-2 border-slate-400 rounded-full overflow-hidden relative shadow-inner">
+                    <div id="global-progress-fill" class="h-full bg-blue-500 w-0 transition-all duration-500"></div>
+                </div>
+                <span id="global-progress-text" class="font-bold text-sm text-slate-700 whitespace-nowrap">0 / 0 (0%)</span>
+            </div>
+        </section>
+
+        <!-- Tabs -->
+        <div class="flex flex-col sm:flex-row gap-0 mt-4 px-2">
+            <button id="tab-list" class="neo-button active flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-r-0 sm:border-r-3">
+                📋 單字總表
+            </button>
+            <button id="tab-challenge" class="neo-button inactive flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-l-0 sm:border-l-3">
+                🎮 實戰挑戰
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <section class="bg-white neo-box overflow-hidden -mt-1 relative z-0">
+            <!-- List View -->
+            <div id="view-list" class="block w-full overflow-x-auto">
+                <table class="w-full text-left min-w-[600px]">
+                    <thead class="bg-[#6ee7b7]">
+                        <tr>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg w-[30%]">英文單字</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg w-[40%]">中文意思</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg text-center w-[15%]">課次</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg text-center w-[15%]">功能</th>
+                        </tr>
+                    </thead>
+                    <tbody id="list-tbody" class="font-medium">
+                        <!-- Dynamic Content -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Challenge View -->
+            <div id="view-challenge" class="hidden w-full overflow-x-auto flex-col">
+                
+                <!-- Scope Progress & Tools -->
+                <div class="bg-[#ede9fe] p-3 md:p-4 border-b-2 border-[#1e293b] flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 w-full md:w-auto flex-1">
+                        <span class="font-bold text-base md:text-lg whitespace-nowrap text-gray-800">🎯 篩選範圍進度：</span>
+                        <div class="flex-1 max-w-md h-5 bg-white border-2 border-[#1e293b] rounded-full overflow-hidden relative shadow-inner">
+                            <div id="scope-progress-fill" class="h-full bg-[#4ade80] w-0 transition-all duration-500"></div>
+                        </div>
+                        <span id="scope-progress-text" class="font-bold text-base md:text-lg whitespace-nowrap text-gray-800">0 / 0</span>
+                    </div>
+                    <div class="flex gap-2 text-sm md:text-base">
+                        <button id="btn-all-hints" class="bg-[#f97316] text-white font-bold py-2 px-3 neo-box-sm transition-transform hover:scale-105 flex items-center gap-1">
+                            💡 全選救命提示
+                        </button>
+                        <button id="btn-clear-inputs" class="bg-[#e5e7eb] text-gray-800 font-bold py-2 px-3 neo-box-sm transition-transform hover:scale-105 flex items-center gap-1">
+                            🧹 清空草稿輸入
+                        </button>
+                    </div>
+                </div>
+
+                <table class="w-full text-left min-w-[800px]">
+                    <thead class="bg-[#fdbf11]">
+                        <tr>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg w-[25%]">中文意思</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg w-[35%]">英打區 (輸入單字)</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg text-center w-[10%]">救命</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg text-center w-[15%]">提示</th>
+                            <th class="p-3 md:p-4 font-black text-base md:text-lg text-center w-[15%]">功能</th>
+                        </tr>
+                    </thead>
+                    <tbody id="challenge-tbody" class="font-medium">
+                        <!-- Dynamic Content -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Data parsed and mapped from the provided B1 Appendix PDF
+        const rawData = [
+            "all of a sudden|phr.|L4|突然地", "ability|n.|L4|能力", "accident|n.|L1|意外", "accidental|adj.|L1|意外的", "accidentally|adv.|L1|意外地", "accomplish|v.|L4|完成；實現", "accomplishment|n.|L4|成就", "activity|n.|R2|活動", "actually|adv.|R2|實際上", "advantage|n.|L8|優勢；好處", "afterward|adv.|R1|後來；之後", "aim|v.|L8|目標在於；瞄準", "alert|adj.|L4|警覺的", "amaze|v.|L3|使驚訝", "amazement|n.|L3|驚訝", "amazing|adj.|L3|令人驚奇的", "ancient|adj.|L6|古代的", "applicant|n.|L7|申請人", "application|n.|L7|申請；應用", "apply|v.|L7|申請；應用", "assign|v.|L4|指派", "assignment|n.|L4|作業；任務", "associate|v.|L9|聯想；聯繫", "association|n.|L9|協會；聯想", "astonish|v.|R1|使驚訝", "attention|n.|L2|注意力", "attract|v.|L6|吸引", "attraction|n.|L6|吸引力；景點", "attractive|adj.|L6|有吸引力的", "average|adj.|L3|平均的；普通的", "avoid|v.|L3|避免", "awake|adj.|L3|醒著的", "aware|adj.|L8|意識到的", "awareness|n.|L8|意識", "according to|phr.|L3|根據",
+            "bare|adj.|L7|裸露的；僅僅的", "barely|adv.|L7|幾乎不", "behave|v.|L4|表現；行為", "behavior|n.|L4|行為", "booth|n.|R2|攤位", "breath|n.|L3|呼吸(名詞)", "breathe|v.|L3|呼吸(動詞)", "bury|v.|R3|埋葬", "be on the lookout for|phr.|L3|密切注意", "be carried away|phr.|L7|得意忘形；被吸引", "get carried away|phr.|L7|得意忘形", "be likely to|phr.|L8|有可能",
+            "capture|v.|R3|捕捉", "celebrate|v.|L6|慶祝", "celebration|n.|L6|慶典", "clever|adj.|L8|聰明的", "communicate|v.|L2|溝通", "communication|n.|L2|溝通", "community|n.|L9|社區", "complete|v.|L4|完成", "complete|adj.|L4|完整的", "concert|n.|L7|音樂會", "conduct|v.|R2|執行；實施", "connect|v.|L2|連接", "connection|n.|L2|關聯；連接", "conservation|n.|R3|保育保護", "consume|v.|L5|消耗；消費", "consumer|n.|L5|消費者", "contrast|n.|L9|對比", "convenience|n.|L5|便利", "create|v.|L4|創造", "creation|n.|L4|創造物", "creative|adj.|L4|有創意的", "creativity|n.|L4|創造力", "creature|n.|L3|生物", "crime|n.|L9|犯罪", "criminal|n.|L9|罪犯", "crowd|n.|L5|人群", "crowded|adj.|L5|擁擠的", "culture|n.|R1|文化", "custom|n.|R1|習俗", "customer|n.|L8|顧客", "carry out|phr.|L4|執行", "close to|phr.|L6|接近", "come across|phr.|L4|偶然遇見", "come along|phr.|L5|出現；進展", "come in|phr.|L9|進來；流行", "come out of|phr.|L7|從...出來",
+            "daily|adj.|R1|每日的", "damage|n.|R3|損害", "dazzle|v.|L7|使目眩", "deny|v.|L2|否認", "depressed|adj.|L1|沮喪的", "depress|v.|L1|使沮喪", "depression|n.|L1|憂鬱；沮喪", "destroy|v.|L9|破壞", "destruction|n.|L9|破壞(名詞)", "destructive|adj.|L9|破壞性的", "detail|n.|L9|細節", "detailed|adj.|L9|詳細的", "detect|v.|L4|偵測；察覺", "determination|n.|L7|決心", "determine|v.|L7|決定", "difference|n.|R1|差異", "director|n.|R3|導演；主管", "disappear|v.|R1|消失", "disappoint|v.|L2|使失望", "disappointed|adj.|L2|感到失望的", "disappointment|n.|L2|失望", "disaster|n.|R3|災難", "discourage|v.|L7|使氣餒", "disease|n.|L4|疾病", "display|v.|L8|展示", "distance|n.|L3|距離", "distant|adj.|L3|遙遠的", "dizzy|adj.|L7|暈眩的", "documentary|n.|R3|紀錄片", "drift|v.|L5|漂流", "dress up|phr.|L1|盛裝打扮", "due to|phr.|L4|由於",
+            "eager|adj.|L5|渴望的", "eagerly|adv.|L5|渴望地", "effect|n.|R3|效果；影響", "effort|n.|L9|努力", "embarrassed|adj.|L1|感到尷尬的", "embarrassing|adj.|L1|令人尷尬的", "embarrass|v.|L1|使尷尬", "embarrassment|n.|L1|難堪", "embrace|v.|R1|擁抱；接受", "encourage|v.|L7|鼓勵", "encouragement|n.|L7|鼓勵(名詞)", "environment|n.|L5|環境", "environmental|adj.|L5|環境的", "envy|v.|L5|嫉妒；羨慕", "escalator|n.|R2|手扶梯", "eventually|adv.|L8|最終", "eventual|adj.|L8|最後的", "experiment|n.|R2|實驗", "expert|n.|L3|專家", "expose|v.|L4|暴露", "exposure|n.|L4|暴露(名詞)", "express|v.|L9|表達", "expression|n.|L9|表情；表達", "end up|phr.|L5|最後...", "even though|phr.|L6|即使", "except for|phr.|R1|除了...之外",
+            "failure|n.|L1|失敗", "faith|n.|L7|信心；信仰", "faithful|adj.|L7|忠實的", "familiar|adj.|L8|熟悉的", "firm|adj.|L6|堅定的", "firmly|adv.|L6|堅固地", "flight|n.|L3|航班；飛行", "float|v.|L3|漂浮", "focus|v.|L2|專注", "forever|adv.|R1|永遠", "fortunately|adv.|L1|幸運地", "fortunate|adj.|L1|幸運的", "freedom|n.|L6|自由", "for a start|phr.|R1|首先", "for a while|phr.|L5|一會兒", "for example|phr.|L3|例如", "for the better|phr.|R2|好轉",
+            "global|adj.|L6|全球的", "globe|n.|L6|地球；球體", "goal|n.|R2|目標", "grab|v.|R1|抓取", "grateful|adj.|R3|感激的", "greeting|n.|R1|問候", "get rid of|phr.|L9|擺脫", "go through|phr.|L2|經歷",
+            "harm|n.|L5|傷害", "harmful|adj.|L5|有害的", "horrible|adj.|L9|可怕的", "horrify|v.|L9|使恐懼", "horror|n.|L9|恐懼", "hand over|phr.|R1|交出", "hang out|phr.|L2|閒晃", "hold on to|phr.|L3|緊抓；堅持",
+            "ignorance|n.|L2|無知", "ignore|v.|L2|忽略", "impact|n.|R3|影響；衝擊", "impress|v.|L3|使印象深刻", "impression|n.|L3|印象", "impressive|adj.|L3|令人印象深刻的", "improve|v.|R2|改善", "impulse|n.|L8|衝動", "include|v.|R1|包含", "independence|n.|L6|獨立", "independent|adj.|L6|獨立的", "industry|n.|R3|工業；產業", "infect|v.|L4|感染", "infected|adj.|L4|受感染的", "infection|n.|L4|感染(名詞)", "innocence|n.|L9|無辜；天真", "innocent|adj.|L9|無辜的", "inspiration|n.|L2|靈感", "inspire|v.|L2|啟發", "instrument|n.|L7|儀器；樂器", "intersection|n.|R2|十字路口", "introduce|v.|L2|介紹", "introduction|n.|L2|介紹(名詞)", "invaluable|adj.|L7|無價的", "item|n.|L4|物品；項目", "in addition|phr.|L2|此外", "in case|phr.|L2|以防萬一", "in fact|phr.|L2|事實上", "in person|phr.|L1|親自",
+            "journey|n.|L3|旅程",
+            "keen|adj.|L4|熱切的；敏銳的",
+            "landmark|n.|L6|地標", "locate|v.|L4|位於", "location|n.|L4|地點", "line up|phr.|L8|排隊", "let down|phr.|L6|使失望", "look for|phr.|L7|尋找", "look forward to|phr.|L7|期待", "look out for|phr.|L3|留意",
+            "manage|v.|L4|管理；設法", "management|n.|L4|管理", "masterpiece|n.|R3|傑作", "memorable|adj.|L1|難忘的", "memorize|v.|L1|記住", "memory|n.|L1|記憶", "mess|n.|L9|混亂", "message|n.|L2|訊息", "messy|adj.|L9|凌亂的", "monument|n.|L6|紀念碑", "motivate|v.|R2|激勵", "make a living|phr.|L7|謀生", "make sure|phr.|L1|確保",
+            "nap|n.|L3|小睡", "no longer|phr.|R3|不再", "nothing but|phr.|L9|只有",
+            "obvious|adj.|L5|明顯的", "obviously|adv.|L5|明顯地", "offer|v.|L8|提供", "opinion|n.|L9|意見", "ordinary|adj.|R2|普通的", "overseas|adj.|L7|海外的", "on the contrary|phr.|R3|相反地", "on the other hand|phr.|R1|另一方面", "on one's own|phr.|L5|靠自己", "over time|phr.|L6|隨著時間過去",
+            "pedestrian|n.|R2|行人", "perfect|adj.|L1|完美的", "perform|v.|L4|表演；執行", "performance|n.|L4|表演(名詞)", "permission|n.|L9|許可", "permit|v.|L9|允許", "personal|adj.|L2|個人的", "personally|adv.|L2|就個人而言", "photographer|n.|R3|攝影師", "plastic|n.|L5|塑膠", "poison|n.|L5|毒藥", "poisonous|adj.|L5|有毒的", "pollute|v.|L9|汙染", "pollution|n.|L9|汙染(名詞)", "positive|adj.|R2|正向的", "potential|n.|L7|潛力", "predict|v.|L4|預測", "present|v.|L1|呈現", "presentation|n.|L1|簡報", "prevent|v.|R3|預防", "produce|v.|L5|生產", "product|n.|L5|產品", "production|n.|L5|生產(名詞)", "profit|n.|L8|利潤", "profitable|adj.|L8|有利可圖的", "promote|v.|R2|促進；升遷", "proof|n.|R3|證據", "proper|adj.|L5|適當的", "properly|adv.|L5|適當地", "purchase|v.|L8|購買", "pursue|v.|L7|追求", "pursuit|n.|L7|追求(名詞)", "pack up|phr.|L5|打包", "pay a visit to|phr.|L6|拜訪", "pay off|phr.|R3|得到回報", "put up|phr.|R2|張貼；建造", "put first|phr.|L1|把...擺第一",
+            "realize|v.|L1|了解；實現", "recall|v.|L1|回想起", "receive|v.|L7|收到", "record|n.|R3|紀錄", "recycle|v.|L5|回收", "recycling|n.|L5|資源回收", "reflect|v.|L1|反映", "reflection|n.|L1|倒影；反省", "refresh|v.|L2|使恢復精力", "relate|v.|L2|有關聯", "relation|n.|L2|關係", "relationship|n.|L2|戀愛關係", "remind|v.|L1|提醒", "remove|v.|L6|移除", "reply|v.|L1|回覆", "represent|v.|L6|代表", "representation|n.|L6|代表(名詞)", "respond|v.|L2|回應", "response|n.|L2|回應(名詞)", "reward|n.|L4|報酬；獎勵", "romance|n.|L2|浪漫", "romantic|adj.|L2|浪漫的", "routine|n.|R2|例行公事", "ruin|v.|L1|毀壞", "rather than|phr.|R2|而不是",
+            "sacred|adj.|R1|神聖的", "satisfaction|n.|L2|滿意", "satisfy|v.|L2|使滿意", "satisfying|adj.|L2|令人滿意的", "scenery|n.|R3|風景", "schedule|n.|R1|行程表", "scream|v.|L7|尖叫", "sensitive|adj.|L4|敏感的", "shed|v.|R3|流(淚)；脫落", "signal|n.|R2|信號", "similarly|adv.|L8|相似地", "similar|adj.|L8|相似的", "similarity|n.|L8|相似處", "skip|v.|L1|略過", "slave|n.|L6|奴隸", "slavery|n.|L6|奴隸制度", "somehow|adv.|L7|不知怎麼地", "spark|n.|R2|火花；引發", "specific|adj.|L4|特定的", "statue|n.|L6|雕像", "strategy|n.|L8|策略", "substance|n.|L5|物質", "surface|n.|L3|表面", "surround|v.|L5|圍繞", "surroundings|n.|L5|環境", "survival|n.|L3|生存", "survive|v.|L3|存活", "symbol|n.|L6|象徵", "symbolic|adj.|L6|象徵性的", "symbolize|v.|L6|象徵(動詞)", "set up|phr.|L8|建立", "stand for|phr.|L9|代表", "start off|phr.|L8|開始", "start out|phr.|R3|開始",
+            "therefore|adv.|L3|因此", "throughout|prep.|L2|遍及", "tourism|n.|L6|觀光業", "tourist|n.|L6|觀光客", "tradition|n.|L1|傳統", "traditional|adj.|L1|傳統的", "tragedy|n.|R3|悲劇", "trap|n.|L8|陷阱", "treatment|n.|L6|對待；治療", "triumph|n.|L7|勝利", "twist|v.|R2|扭曲", "take action|phr.|R2|採取行動", "take advantage of|phr.|L8|利用", "take personally|phr.|L2|把...看得很重", "take seriously|phr.|L1|認真看待", "tear at one's heart|phr.|R3|令人心碎", "thanks to|phr.|R2|幸虧", "the rest of|phr.|L1|剩下的", "tons of|phr.|L7|大量的", "turn out|phr.|L4|結果是", "turn to|phr.|L2|轉向；求助於",
+            "unfair|adj.|L6|不公平的", "upset|adj.|L1|心煩的", "urge|v.|L8|催促", "up to|phr.|L3|取決於；高達",
+            "valuable|adj.|R1|有價值的", "variety|n.|L3|多樣化", "various|adj.|L3|各式各樣的", "vary|v.|L3|變化", "violent|adj.|L9|暴力的", "violence|n.|L9|暴力", "visible|adj.|L8|可見的", "visual|adj.|L9|視覺的",
+            "wonder|v.|L3|想知道", "when it comes to|phr.|L9|說到...", "within reach|phr.|L8|在可及範圍內",
+            "yell|v.|L1|大叫"
+        ];
+
+        // Core App State
+        let words = []; // Array of { id, word, pos, lesson, chinese }
+        let filteredWords = [];
+        let currentTab = 'list';
+        let filterModes = {
+            starredOnly: false,
+            mistakesOnly: false
+        };
+
+        // Student & Session State
+        let state = {
+            sessionId: null,
+            revision: 0,
+            student: null, // { className, seatNumber, name }
+            startedAt: null,
+            activeSeconds: 0,
+            status: "進行中",
+            items: {} // Mapping of id -> itemState
+        };
+        
+        let pendingStorageKey = null; // className_seatNumber
+        
+        // Sync State
+        let isSyncing = false;
+        let lastSyncedRevision = -1;
+        let saveInterval = null;
+        let activityInterval = null;
+        let lastActivityTime = Date.now();
+
+        // Helpers
+        const uuidv4 = () => {
+            if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        };
+
+        const cleanString = (str) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+
+        function init() {
+            // Parse raw data, assign standard ID
+            words = rawData.map(entry => {
+                const [word, pos, lesson, chinese] = entry.split('|');
+                const id = JSON.stringify([lesson, pos, word]);
+                return { id, word, pos, lesson, chinese };
+            });
+
+            bindUIEvents();
+            setupActivityTracking();
+            
+            // Check auth status
+            document.getElementById('registration-modal').classList.remove('hidden');
+        }
+
+        function bindUIEvents() {
+            // Registration Events
+            document.getElementById('btn-register').addEventListener('click', handleRegistration);
+            document.getElementById('btn-resume').addEventListener('click', () => finalizeLogin(false));
+            document.getElementById('btn-new-round').addEventListener('click', () => finalizeLogin(true));
+            
+            // App Events
+            document.getElementById('btn-manual-save').addEventListener('click', forceSync);
+            document.getElementById('btn-end-session').addEventListener('click', endSession);
+            document.getElementById('btn-change-student').addEventListener('click', changeStudent);
+            
+            // Filter Events
+            document.getElementById('filter-lesson').addEventListener('change', updateView);
+            document.getElementById('filter-letter').addEventListener('change', updateView);
+            document.getElementById('filter-pos').addEventListener('change', updateView);
+            
+            document.getElementById('btn-toggle-starred').addEventListener('click', () => {
+                filterModes.starredOnly = !filterModes.starredOnly;
+                updateView();
+            });
+            document.getElementById('btn-toggle-mistakes').addEventListener('click', () => {
+                filterModes.mistakesOnly = !filterModes.mistakesOnly;
+                updateView();
+            });
+            document.getElementById('btn-reset-filters').addEventListener('click', resetAllFilters);
+            
+            // Tab Events
+            document.getElementById('tab-list').addEventListener('click', () => switchTab('list'));
+            document.getElementById('tab-challenge').addEventListener('click', () => switchTab('challenge'));
+
+            // Challenge Tools Events
+            document.getElementById('btn-all-hints').addEventListener('click', checkAllHints);
+            document.getElementById('btn-clear-inputs').addEventListener('click', clearAllDrafts);
+
+            // Delegation for dynamic table buttons
+            document.getElementById('list-tbody').addEventListener('click', handleTableClicks);
+            document.getElementById('challenge-tbody').addEventListener('click', handleTableClicks);
+            
+            // Delegation for dynamic table inputs (Enter key)
+            document.getElementById('challenge-tbody').addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'text' && e.key === 'Enter') {
+                    const tr = e.target.closest('tr');
+                    const btn = tr.querySelector('.btn-confirm');
+                    if(btn && !btn.disabled) btn.click();
+                }
+            });
+            
+            // Real-time drafting tracking
+            document.getElementById('challenge-tbody').addEventListener('input', (e) => {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                    const id = e.target.closest('tr').dataset.id;
+                    initItemState(id);
+                    state.items[id].draft = e.target.value;
+                    e.target.classList.remove('input-correct', 'input-wrong'); // Reset colors when typing
+                }
+            });
+        }
+
+        function handleRegistration() {
+            const classVal = document.getElementById('reg-class').value.trim();
+            const seatVal = document.getElementById('reg-seat').value.trim();
+            const nameVal = document.getElementById('reg-name').value.trim();
+            const errorEl = document.getElementById('reg-error');
+
+            if (!classVal || !seatVal || !nameVal || seatVal < 1 || seatVal > 50) {
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            const newStudent = { className: classVal, seatNumber: parseInt(seatVal, 10), name: nameVal };
+            pendingStorageKey = `b1_student_${newStudent.className}_${newStudent.seatNumber}`;
+            
+            const existingDataStr = localStorage.getItem(pendingStorageKey);
+            
+            if (existingDataStr) {
+                try {
+                    const parsed = JSON.parse(existingDataStr);
+                    // Confirm name match? (Simple verification for same seat mapping)
+                    if(parsed.student && parsed.student.name !== newStudent.name) {
+                       if(!confirm(`此座號已有紀錄姓名：${parsed.student.name}。是否覆蓋並換人？\n(取消則請重新輸入座號)`)) return;
+                    }
+                    
+                    // Found valid data, show resume options
+                    state.student = newStudent; 
+                    document.getElementById('resume-actions').classList.remove('hidden');
+                    document.getElementById('btn-register').classList.add('hidden');
+                } catch(e) {
+                    // Invalid JSON, overwrite
+                    state.student = newStudent;
+                    finalizeLogin(true); 
+                }
+            } else {
+                state.student = newStudent;
+                finalizeLogin(true);
+            }
+        }
+
+        function finalizeLogin(isNewRound) {
+            document.getElementById('registration-modal').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('display-student-info').textContent = `${state.student.className}-${state.student.seatNumber} ${state.student.name}`;
+            
+            if (isNewRound) {
+                startNewSession();
+            } else {
+                loadSession();
+            }
+            
+            // Start sync loop
+            if(saveInterval) clearInterval(saveInterval);
+            saveInterval = setInterval(checkAndSync, 30000);
+            
+            updateView();
+        }
+
+        function startNewSession() {
+            let oldStarred = {};
+            // Preserve starred items if data exists
+            try {
+                const oldData = JSON.parse(localStorage.getItem(pendingStorageKey));
+                if (oldData && oldData.items) {
+                    for (const id in oldData.items) {
+                        if (oldData.items[id].starred) oldStarred[id] = true;
+                    }
+                }
+            } catch(e) {}
+
+            state = {
+                sessionId: uuidv4(),
+                revision: 1,
+                student: state.student,
+                startedAt: new Date().toISOString(),
+                activeSeconds: 0,
+                status: "進行中",
+                items: {}
+            };
+
+            // Restore stars
+            for (const id in oldStarred) {
+                initItemState(id);
+                state.items[id].starred = true;
+            }
+
+            lastSyncedRevision = 0;
+            saveLocally();
+        }
+
+        function loadSession() {
+            try {
+                const data = JSON.parse(localStorage.getItem(pendingStorageKey));
+                if (data && data.sessionId) {
+                    state = data;
+                    lastSyncedRevision = data.revision - 1; // Assume need sync if any change happened offline
+                } else {
+                    startNewSession();
+                }
+            } catch(e) {
+                alert("本機資料解析失敗，將開啟新進度。");
+                startNewSession();
+            }
+        }
+
+        function saveLocally() {
+            try {
+                localStorage.setItem(pendingStorageKey, JSON.stringify(state));
+            } catch(e) {
+                console.error("Local Storage Save Error:", e);
+                alert("儲存空間不足或存取遭拒，無法保存在本機。");
+            }
+        }
+
+        async function changeStudent() {
+            if (state.revision > lastSyncedRevision) {
+                const ok = confirm("有未上傳的進度。點擊確定將強制儲存後登出，若網路不穩可能遺失該段資料。");
+                if(!ok) return;
+                await forceSync(true); // wait for sync
+            }
+            
+            if(saveInterval) clearInterval(saveInterval);
+            
+            state = { sessionId: null, revision: 0, student: null, startedAt: null, activeSeconds: 0, status: "進行中", items: {} };
+            pendingStorageKey = null;
+            
+            document.getElementById('app-container').classList.add('hidden');
+            
+            // Reset modal
+            document.getElementById('registration-modal').classList.remove('hidden');
+            document.getElementById('btn-register').classList.remove('hidden');
+            document.getElementById('resume-actions').classList.add('hidden');
+            document.getElementById('reg-class').value = '';
+            document.getElementById('reg-seat').value = '';
+            document.getElementById('reg-name').value = '';
+        }
+
+        async function endSession() {
+            state.status = "已結束";
+            state.revision++;
+            saveLocally();
+            await forceSync(true);
+            alert("進度已儲存。您可以關閉視窗。");
+        }
+
+        function setupActivityTracking() {
+            const updateActivity = () => { lastActivityTime = Date.now(); };
+            ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+                document.addEventListener(evt, updateActivity, { passive: true });
+            });
+
+            activityInterval = setInterval(() => {
+                if (document.visibilityState === 'visible' && state.sessionId && state.status === "進行中") {
+                    if (Date.now() - lastActivityTime < 60000) {
+                        state.activeSeconds++;
+                    }
+                }
+            }, 1000);
+        }
+
+        async function checkAndSync() {
+            if (isSyncing || state.revision <= lastSyncedRevision || !state.sessionId) return;
+            await executeSync();
+        }
+
+        async function forceSync(wait = false) {
+            if (!state.sessionId) return;
+            if (state.revision === lastSyncedRevision) {
+                alert("目前無新進度需儲存。");
+                return;
+            }
+            if (wait) {
+                await executeSync();
+            } else {
+                executeSync();
+            }
+        }
+
+        function executeSync() {
+            return new Promise(async (resolve) => {
+                isSyncing = true;
+                const statusEl = document.getElementById('sync-status');
+                statusEl.textContent = "儲存中...";
+                statusEl.className = "text-blue-500";
+
+                const currentRevision = state.revision;
+                
+                // Build payload matching exact required schema
+                const payload = {
+                    sessionId: state.sessionId,
+                    revision: currentRevision,
+                    student: state.student,
+                    startedAt: state.startedAt,
+                    scope: document.getElementById('filter-lesson').value,
+                    totalWords: words.length,
+                    activeSeconds: state.activeSeconds,
+                    status: state.status,
+                    items: []
+                };
+
+                // Add interacted items
+                for (const id in state.items) {
+                    const item = state.items[id];
+                    // Find basic info from words array
+                    const wordInfo = words.find(w => w.id === id);
+                    if (wordInfo) {
+                        payload.items.push({
+                            questionId: id,
+                            lesson: wordInfo.lesson,
+                            pos: wordInfo.pos,
+                            word: wordInfo.word,
+                            attempts: item.attempts,
+                            firstCorrect: item.firstCorrect,
+                            correct: item.correct,
+                            hintUsed: item.hintUsed,
+                            audioCount: item.audioCount,
+                            starred: item.starred,
+                            lastAnswer: item.lastAnswer
+                        });
+                    }
+                }
+
+                // ==========================================
+                //  設定您的 Google Apps Script Web App 網址
+                // ==========================================
+                const GAS_API_URL = "請將這裡替換成您部署後的_GAS_網址"; 
+
+                // 檢查是否已填入網址，若無則停留在預覽模式
+                if (!GAS_API_URL.startsWith("https://script.google.com/")) {
+                    setTimeout(() => {
+                        lastSyncedRevision = currentRevision;
+                        statusEl.textContent = "預覽模式：只存本機";
+                        statusEl.className = "text-orange-500";
+                        isSyncing = false;
+                        resolve();
+                    }, 500);
+                    return;
+                }
+
+                try {
+                    // 使用 fetch 發送資料
+                    // 使用 text/plain 藉此避開瀏覽器對於 application/json 嚴格的預檢請求 (Preflight CORS)
+                    const response = await fetch(GAS_API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "text/plain;charset=utf-8" 
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    isSyncing = false;
+                    if (result && result.ok === true) {
+                        lastSyncedRevision = currentRevision;
+                        if (state.revision > lastSyncedRevision) {
+                            statusEl.textContent = "有新進度待儲存";
+                            statusEl.className = "text-orange-500";
+                        } else {
+                            statusEl.textContent = state.status === "已結束" ? "已結束並儲存" : "已儲存";
+                            statusEl.className = "text-green-600";
+                        }
+                    } else {
+                        throw new Error(result.error || "Unknown Error");
+                    }
+                } catch (error) {
+                    isSyncing = false;
+                    console.error("Sync Error:", error);
+                    statusEl.textContent = "儲存失敗，資料保留於本機，請重試";
+                    statusEl.className = "text-red-600 font-bold";
+                }
+                
+                resolve();
+            });
+        }
+
+        function markStateChanged() {
+            state.revision++;
+            saveLocally();
+            const statusEl = document.getElementById('sync-status');
+            if (statusEl.textContent !== "儲存中...") {
+                 if (typeof google === 'undefined' || typeof google.script === 'undefined') {
+                     statusEl.textContent = "預覽模式：有未傳送的變更";
+                     statusEl.className = "text-orange-500";
+                 } else {
+                     statusEl.textContent = "有新進度待儲存";
+                     statusEl.className = "text-orange-500";
+                 }
+            }
+        }
+
+        function initItemState(id) {
+            if (!state.items[id]) {
+                state.items[id] = {
+                    draft: "",
+                    attempts: 0,
+                    firstCorrect: null, // null until first submit
+                    correct: false,
+                    hintUsed: false,
+                    audioCount: 0,
+                    starred: false,
+                    lastAnswer: ""
+                };
+            }
+        }
+
+        // Check if lesson is in range
+        function isLessonInRange(lesson, range) {
+            const ranges = {
+                'EXAM1': ['L1', 'L2', 'L3', 'R1'],
+                'EXAM2': ['L4', 'L5', 'L6', 'R2'],
+                'EXAM3': ['L7', 'L8', 'L9', 'R3']
+            };
+            return ranges[range] ? ranges[range].includes(lesson) : false;
+        }
+
+        function speak(text, id) {
+            initItemState(id);
+            state.items[id].audioCount++;
+            markStateChanged();
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); 
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.85; 
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.warn("您的瀏覽器不支援語音發音功能。");
+            }
+        }
+
+        function toggleStar(id) {
+            initItemState(id);
+            state.items[id].starred = !state.items[id].starred;
+            markStateChanged();
+            updateView();
+        }
+
+        function handleHintToggle(id, isChecked) {
+            initItemState(id);
+            if (isChecked && !state.items[id].hintUsed) {
+                state.items[id].hintUsed = true;
+                markStateChanged();
+            }
+            // Even if unchecked, hintUsed remains true historically.
+            // But we control rendering of the hint string via the checkbox state in DOM.
+            const hintSpan = document.getElementById(`hint-${id}`);
+            if(hintSpan) {
+                if(isChecked) {
+                    const wordObj = words.find(w => w.id === id);
+                    hintSpan.innerHTML = generateHintString(wordObj.word);
+                } else {
+                    hintSpan.innerHTML = '';
+                }
+            }
+        }
+
+        function submitAnswer(id, inputValue) {
+            initItemState(id);
+            const sItem = state.items[id];
+            
+            // Do nothing if already correctly submitted
+            if(sItem.correct) return;
+
+            const val = cleanString(inputValue);
+            if (val === "") return; // Skip empty submissions
+
+            const wordObj = words.find(w => w.id === id);
+            const target = cleanString(wordObj.word);
+
+            const isCorrectNow = (val === target);
+            
+            sItem.attempts++;
+            sItem.lastAnswer = inputValue;
+            
+            if (sItem.firstCorrect === null) {
+                sItem.firstCorrect = isCorrectNow;
+            }
+            
+            sItem.correct = isCorrectNow;
+            // Clear draft on submission
+            sItem.draft = ""; 
+            
+            markStateChanged();
+            updateView(); // Re-render to show updated colors/locks and progress
+        }
+
+        function updateView() {
+            if(!state.student) return;
+
+            const lessonFilter = document.getElementById('filter-lesson').value;
+            const letterFilter = document.getElementById('filter-letter').value;
+            const posFilter = document.getElementById('filter-pos').value;
+
+            filteredWords = words.filter(item => {
+                let passLesson = (lessonFilter === 'ALL') || 
+                                 (lessonFilter.startsWith('EXAM') ? isLessonInRange(item.lesson, lessonFilter) : item.lesson === lessonFilter);
+                
+                let passLetter = (letterFilter === 'ALL') || item.word.toUpperCase().startsWith(letterFilter);
+                
+                let passPos = (posFilter === 'ALL') || item.pos.includes(posFilter);
+
+                let passStarred = true;
+                if (filterModes.starredOnly) {
+                    passStarred = state.items[item.id] && state.items[item.id].starred;
+                }
+
+                let passMistake = true;
+                if (filterModes.mistakesOnly) {
+                    // Include if they answered at least once AND first correct is false
+                    passMistake = state.items[item.id] && state.items[item.id].firstCorrect === false;
+                }
+
+                return passLesson && passLetter && passPos && passStarred && passMistake;
+            });
+
+            // Update Counters & UI styling
+            document.getElementById('word-count').textContent = filteredWords.length;
+            
+            // Calculate stars and mistakes for whole data to show in buttons
+            let totalStars = 0;
+            let totalMistakes = 0;
+            let totalGlobalCorrect = 0;
+            
+            for(const w of words) {
+                if(state.items[w.id]) {
+                    if(state.items[w.id].starred) totalStars++;
+                    if(state.items[w.id].firstCorrect === false) totalMistakes++;
+                    if(state.items[w.id].correct) totalGlobalCorrect++;
+                }
+            }
+            
+            document.getElementById('starred-count').textContent = totalStars;
+            document.getElementById('mistake-count').textContent = totalMistakes;
+            
+            // Global Progress Update
+            const gText = document.getElementById('global-progress-text');
+            const gFill = document.getElementById('global-progress-fill');
+            const gPercent = words.length ? Math.round((totalGlobalCorrect / words.length) * 100) : 0;
+            gText.textContent = `${totalGlobalCorrect} / ${words.length} (${gPercent}%)`;
+            gFill.style.width = `${gPercent}%`;
+
+            const btnStar = document.getElementById('btn-toggle-starred');
+            btnStar.className = filterModes.starredOnly 
+                ? "bg-[#c2410c] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 ring-4 ring-orange-300"
+                : "bg-[#fb923c] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 transition-transform hover:scale-105";
+                
+            const btnMistake = document.getElementById('btn-toggle-mistakes');
+            btnMistake.className = filterModes.mistakesOnly
+                ? "bg-[#b91c1c] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 ring-4 ring-red-300"
+                : "bg-[#ef4444] text-white font-bold py-2 px-3 neo-box-sm flex items-center gap-1 transition-transform hover:scale-105";
+
+            // Render current active tab
+            if (currentTab === 'list') {
+                renderList();
+            } else {
+                renderChallenge();
+            }
+        }
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            
+            const btnList = document.getElementById('tab-list');
+            const btnChallenge = document.getElementById('tab-challenge');
+            const viewList = document.getElementById('view-list');
+            const viewChallenge = document.getElementById('view-challenge');
+
+            if (tabId === 'list') {
+                btnList.className = "neo-button active flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-r-0 sm:border-r-3";
+                btnChallenge.className = "neo-button inactive flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-l-0 sm:border-l-3";
+                viewList.classList.remove('hidden');
+                viewChallenge.classList.add('hidden');
+            } else {
+                btnChallenge.className = "neo-button active flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-l-0 sm:border-l-3";
+                btnList.className = "neo-button inactive flex-1 py-3 text-base md:text-lg font-bold flex items-center justify-center gap-2 border-r-0 sm:border-r-3";
+                viewChallenge.classList.remove('hidden');
+                viewList.classList.add('hidden');
+            }
+
+            updateView(); 
+        }
+
+        function renderList() {
+            const tbody = document.getElementById('list-tbody');
+            tbody.innerHTML = '';
+
+            if (filteredWords.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 4;
+                td.className = "p-8 text-center text-gray-500 font-bold";
+                td.textContent = "沒有符合條件的單字 😢";
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                return;
+            }
+
+            filteredWords.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? "bg-white" : "bg-slate-50";
+                tr.dataset.id = item.id;
+                
+                const badgeColor = item.lesson.startsWith('R') ? 'bg-[#f472b6]' : 'bg-[#1e293b] text-white';
+                const isMistake = state.items[item.id] && state.items[item.id].firstCorrect === false;
+                const isStarred = state.items[item.id] && state.items[item.id].starred;
+                const starIcon = isStarred ? '⭐' : '☆';
+
+                // We construct safe DOM nodes
+                const tdWord = document.createElement('td');
+                tdWord.className = "p-3 md:p-4 text-base md:text-lg text-[#1d4ed8] font-bold";
+                tdWord.textContent = item.word;
+                if(isMistake) {
+                    const mk = document.createElement('span');
+                    mk.className = "ml-2 text-xs bg-red-100 text-red-600 px-1 rounded border border-red-300";
+                    mk.textContent = "曾錯";
+                    tdWord.appendChild(mk);
+                }
+
+                const tdMeaning = document.createElement('td');
+                tdMeaning.className = "p-3 md:p-4";
+                tdMeaning.textContent = `(${item.pos}) ${item.chinese}`;
+
+                const tdLesson = document.createElement('td');
+                tdLesson.className = "p-3 md:p-4 text-center";
+                tdLesson.innerHTML = `<span class="inline-block px-3 py-1 rounded-full text-sm font-black ${badgeColor} border-2 border-black">${item.lesson}</span>`;
+
+                const tdActions = document.createElement('td');
+                tdActions.className = "p-3 md:p-4 text-center space-x-2";
+                
+                const btnAudio = document.createElement('button');
+                btnAudio.className = "hover:scale-125 transition-transform text-2xl";
+                btnAudio.title = "發音";
+                btnAudio.dataset.action = "play-audio";
+                btnAudio.textContent = "🔊";
+                
+                const btnStar = document.createElement('button');
+                btnStar.className = "hover:scale-125 transition-transform text-2xl";
+                btnStar.title = "加入/移除收藏";
+                btnStar.dataset.action = "toggle-star";
+                btnStar.textContent = starIcon;
+
+                tdActions.appendChild(btnAudio);
+                tdActions.appendChild(btnStar);
+
+                tr.appendChild(tdWord);
+                tr.appendChild(tdMeaning);
+                tr.appendChild(tdLesson);
+                tr.appendChild(tdActions);
+                
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderChallenge() {
+            const tbody = document.getElementById('challenge-tbody');
+            tbody.innerHTML = '';
+
+            let scopeCorrectCount = 0;
+
+            if (filteredWords.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 5;
+                td.className = "p-8 text-center text-gray-500 font-bold";
+                td.textContent = "沒有符合條件的單字 😢";
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+                updateScopeProgress(0, 0);
+                return;
+            }
+
+            filteredWords.forEach((item, index) => {
+                const sItem = state.items[item.id] || {};
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? "bg-white" : "bg-slate-50";
+                tr.dataset.id = item.id;
+                
+                if (sItem.correct) scopeCorrectCount++;
+                
+                const isStarred = sItem.starred;
+                const starIcon = isStarred ? '⭐' : '☆';
+
+                // Meaning
+                const tdMeaning = document.createElement('td');
+                tdMeaning.className = "p-3 md:p-4 font-bold text-gray-700";
+                tdMeaning.textContent = `(${item.pos}) ${item.chinese}`;
+                
+                if(sItem.firstCorrect === false) {
+                    const mk = document.createElement('div');
+                    mk.className = "mt-1 text-xs text-red-600";
+                    mk.textContent = "(曾答錯)";
+                    tdMeaning.appendChild(mk);
+                }
+
+                // Input Area
+                const tdInput = document.createElement('td');
+                tdInput.className = "p-3 md:p-4 flex flex-col md:flex-row gap-2";
+                
+                const inputEl = document.createElement('input');
+                inputEl.type = "text";
+                inputEl.className = "flex-1 neo-box-sm p-2 outline-none font-bold text-base md:text-lg transition-colors focus:ring-2 focus:ring-black min-w-[120px]";
+                inputEl.placeholder = "輸入英文...";
+                inputEl.autocomplete = "off";
+                inputEl.spellcheck = false;
+                
+                // Restore state appearance
+                if (sItem.correct) {
+                    inputEl.value = item.word; // Show exact correct answer
+                    inputEl.disabled = true;
+                    inputEl.classList.add('input-correct');
+                } else {
+                    inputEl.value = sItem.draft || ""; 
+                    if (sItem.attempts > 0 && sItem.lastAnswer !== "") {
+                        // Display previous wrong submission if no new draft
+                        if(!sItem.draft) inputEl.value = sItem.lastAnswer;
+                        inputEl.classList.add('input-wrong');
+                    }
+                }
+
+                const btnConfirm = document.createElement('button');
+                btnConfirm.className = "btn-confirm font-bold py-2 px-3 neo-box-sm flex-shrink-0";
+                btnConfirm.textContent = "確認";
+                btnConfirm.dataset.action = "submit-answer";
+                if(sItem.correct) btnConfirm.disabled = true;
+
+                tdInput.appendChild(inputEl);
+                tdInput.appendChild(btnConfirm);
+
+                // Hint Checkbox
+                const tdHint = document.createElement('td');
+                tdHint.className = "p-3 md:p-4 text-center";
+                const checkEl = document.createElement('input');
+                checkEl.type = "checkbox";
+                checkEl.className = "custom-checkbox";
+                checkEl.dataset.action = "toggle-hint";
+                // If previously checked in UI (or we want to restore from hintUsed), handle it here.
+                // Normally we don't force it checked unless the user checks it *this* render, 
+                // but for simplicity, let's allow them to toggle it to see the string.
+                tdHint.appendChild(checkEl);
+
+                // Hint Text Area
+                const tdHintText = document.createElement('td');
+                tdHintText.className = "p-3 md:p-4 text-center font-bold text-[#ea580c] text-lg md:text-xl tracking-widest";
+                const spanHint = document.createElement('span');
+                spanHint.id = `hint-${item.id}`;
+                // If hintUsed is true, we might auto-show it or wait for checkbox. Wait for checkbox is better UX so it doesn't clutter.
+                tdHintText.appendChild(spanHint);
+
+                // Actions
+                const tdActions = document.createElement('td');
+                tdActions.className = "p-3 md:p-4 text-center space-x-2";
+                
+                const btnAudio = document.createElement('button');
+                btnAudio.className = "hover:scale-125 transition-transform text-2xl";
+                btnAudio.title = "發音";
+                btnAudio.dataset.action = "play-audio";
+                btnAudio.textContent = "🔊";
+                
+                const btnStar = document.createElement('button');
+                btnStar.className = "hover:scale-125 transition-transform text-2xl";
+                btnStar.title = "加入/移除收藏";
+                btnStar.dataset.action = "toggle-star";
+                btnStar.textContent = starIcon;
+
+                tdActions.appendChild(btnAudio);
+                tdActions.appendChild(btnStar);
+
+                tr.appendChild(tdMeaning);
+                tr.appendChild(tdInput);
+                tr.appendChild(tdHint);
+                tr.appendChild(tdHintText);
+                tr.appendChild(tdActions);
+                
+                tbody.appendChild(tr);
+            });
+            
+            updateScopeProgress(scopeCorrectCount, filteredWords.length);
+        }
+
+        function updateScopeProgress(correctCount, total) {
+            const pText = document.getElementById('scope-progress-text');
+            const pBar = document.getElementById('scope-progress-fill');
+            
+            pText.textContent = `${correctCount} / ${total}`;
+            if (total === 0) {
+                pBar.style.width = '0%';
+            } else {
+                const percentage = (correctCount / total) * 100;
+                pBar.style.width = `${percentage}%`;
+            }
+        }
+
+        // Table Event Delegation Handler
+        function handleTableClicks(e) {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            
+            const tr = e.target.closest('tr');
+            if(!tr) return;
+            const id = tr.dataset.id;
+            const action = btn.dataset.action;
+
+            if (action === 'play-audio') {
+                const wordObj = words.find(w => w.id === id);
+                speak(wordObj.word, id);
+            } else if (action === 'toggle-star') {
+                toggleStar(id);
+            } else if (action === 'submit-answer') {
+                const inputEl = tr.querySelector('input[type="text"]');
+                if(inputEl) submitAnswer(id, inputEl.value);
+            } else if (action === 'toggle-hint') {
+                handleHintToggle(id, btn.checked);
+            }
+        }
+
+        function checkAllHints() {
+            const checkboxes = document.querySelectorAll('#challenge-tbody .custom-checkbox');
+            checkboxes.forEach(cb => {
+                if (!cb.checked) {
+                    cb.checked = true;
+                    // manually trigger logic since dispatchEvent doesn't bubble custom nicely in delegation sometimes
+                    const tr = cb.closest('tr');
+                    handleHintToggle(tr.dataset.id, true);
+                }
+            });
+        }
+
+        function clearAllDrafts() {
+            // Only clears draft, does not delete official attempts/correct stats
+            filteredWords.forEach(item => {
+                if(state.items[item.id]) {
+                    state.items[item.id].draft = "";
+                }
+            });
+            markStateChanged();
+            updateView();
+        }
+
+        function resetAllFilters() {
+            document.getElementById('filter-lesson').value = 'ALL';
+            document.getElementById('filter-letter').value = 'ALL';
+            document.getElementById('filter-pos').value = 'ALL';
+            filterModes.starredOnly = false;
+            filterModes.mistakesOnly = false;
+            updateView();
+        }
+
+        function generateHintString(word) {
+            const wordsArray = word.split(' ');
+            return wordsArray.map(w => {
+                if (w.length <= 2) {
+                    return w.charAt(0) + (w.length > 1 ? " _" : "");
+                }
+                const first = w.charAt(0);
+                const last = w.charAt(w.length - 1);
+                const underscores = Array(w.length - 2).fill('_').join(' ');
+                return `${first} ${underscores} ${last}`;
+            }).join(' &nbsp;&nbsp; '); 
+        }
+
+        // Initialize application on load
+        window.onload = init;
+    </script>
+</body>
+</html>
